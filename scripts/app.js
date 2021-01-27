@@ -17,7 +17,7 @@ let min;
 let hr;
 let time;
 let isRunning = false;
-let historyArr = [];
+let historyArr;
 let totalLapsArr = [];
 
 //formatting variables
@@ -35,14 +35,14 @@ function addToSessionStorage(){
         min=0;
         hr=0;
     }
-    /*else{
-        sessionStorage.setItem('ms', ms);
-        sessionStorage.setItem('sec', sec);
-        sessionStorage.setItem('min', min);
-        sessionStorage.setItem('hr', hr);
-    }*/
-    
 }
+
+//set local storage initially
+function initializeHistArr(){
+    const st = '00 : 00 : 00 : 00';
+    historyArr = [st, st, st, st, st, st, st, st, st, st];
+}
+
 //update session storage
 function updateSessionStorage(){
     sessionStorage.setItem('ms', ms);
@@ -111,7 +111,6 @@ function startTimerHandler(){
     min = parseInt(temp3);
     sec = parseInt(temp2);
     ms = parseInt(temp1);
-    console.log(temp1, temp2, temp3, temp4);
     time = setInterval(timer, 10);
 }
 
@@ -127,20 +126,16 @@ function stopTimerHandler(){
 
 //adds history data
 function addToHistory(){
+    let historyArrTemp = JSON.parse(localStorage.getItem('historyArr'));
     historyList.innerHTML = '';
-    for(const log of historyArr){
+    for(const log of historyArrTemp){
         const histLog = `<li>${log}</li>`;
         historyList.innerHTML += histLog;
     }
 }
 
-//reset timer handler
-function resetTimerHandler(){
-    isRunning = false;
-    totalLapsArr = [];//empty total laps as well
-    totalLaps.innerHTML = `TOTAL : 00 : 00 : 00`;
-    //add current lap to the history
-    formatTimer();
+//update history arr
+function updateHistArr(){
     //store only last 10 laps at a time
     let currHist = `${formattedhr} : ${formattedmin} : ${formattedsec} : ${formattedms}`;
     if(historyArr.length < 10){
@@ -150,7 +145,29 @@ function resetTimerHandler(){
         historyArr.pop();
         historyArr.unshift(currHist);
     }
+    //store hist arr to local storage
+    localStorage.setItem('historyArr', JSON.stringify(historyArr));
     addToHistory();
+}
+
+//reset timer handler
+function resetTimerHandler(){
+    isRunning = false;
+    totalLapsArr = [];//empty total laps as well
+    totalLaps.innerHTML = `TOTAL : 00 : 00 : 00`;
+    //add current lap to the history
+    formatTimer();
+    updateHistArr();
+    /*//store only last 10 laps at a time
+    let currHist = `${formattedhr} : ${formattedmin} : ${formattedsec} : ${formattedms}`;
+    if(historyArr.length < 10){
+        historyArr.unshift(currHist);
+    }
+    else{
+        historyArr.pop();
+        historyArr.unshift(currHist);
+    }
+    addToHistory();*/
 
     ms= 0;
     sec = 0;
@@ -199,7 +216,9 @@ function lapsHandler(){
 
 //set values to session initially
 addToSessionStorage();
-
+//initialize history array in local storage
+initializeHistArr();
+addToHistory();
 //adding event listeners
 startTimer.addEventListener('click', startTimerHandler);//also change the button icon to pause
 stopTimer.addEventListener('click', stopTimerHandler);
