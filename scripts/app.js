@@ -40,9 +40,16 @@ function addTimeToLocalStorage(){
 
 //set local storage initially
 function initializeHistArr(){
-    const st = '00 : 00 : 00 : 00';
-    historyArr = [st, st, st, st, st, st, st, st, st, st];
-    localStorage.setItem('historyArr', JSON.stringify(historyArr));
+    let localItemHist = localStorage.getItem('historyArr');
+    if(localItemHist === null){
+        const st = '00 : 00 : 00 : 00';
+        historyArr = [st, st, st, st, st, st, st, st, st, st];
+        localStorage.setItem('historyArr', JSON.stringify(historyArr));
+    }
+    else{
+        let histTemp = localStorage.getItem('historyArr');
+        historyArr = JSON.parse(histTemp);
+    }
 }
 
 //update session storage
