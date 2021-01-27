@@ -16,6 +16,12 @@ body{
     padding: 5%;
     box-shadow: 5px 15px 10px #1f1b1b;
     border-radius: 50px;
+    overflow: auto;
+    max-height: 50vh;  
+}
+::-webkit-scrollbar {
+    width: 10px;  
+    background: #eed3e3;
 }
 .timer{
     font-weight: 500;
