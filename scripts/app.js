@@ -129,7 +129,6 @@ function stopTimerHandler(){
 function addToHistory(){
     let temp = localStorage.getItem('historyArr');
     let historyArrTemp = JSON.parse(temp);
-    console.log(historyArrTemp);
     historyList.innerHTML = '';
     for(const log of historyArrTemp){
         const histLog = `<li>${log}</li>`;
