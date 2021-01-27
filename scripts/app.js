@@ -215,6 +215,7 @@ addToSessionStorage();
 //initialize history array in local storage
 initializeHistArr();
 addToHistory();
+startTimerHandler();
 //adding event listeners
 startTimer.addEventListener('click', startTimerHandler);//also change the button icon to pause
 stopTimer.addEventListener('click', stopTimerHandler);
