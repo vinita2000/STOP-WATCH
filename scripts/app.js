@@ -143,6 +143,7 @@ function addToHistory(){
 //update history arr
 function updateHistArr(){
     //store only last 10 laps at a time
+    //store the laps and curr time
     let currHist = `${formattedhr} : ${formattedmin} : ${formattedsec} : ${formattedms}`;
     if(historyArr.length < 10){
         historyArr.unshift(currHist);
@@ -204,6 +205,7 @@ function addCurrLaptoArr(){
 function lapsHandler(){
     formatTimer();
     addCurrLaptoArr();
+    updateHistArr();
     let currentLap = `<li class="lapItem">
                         <p>${formattedhr} : ${formattedmin} : ${formattedsec} : ${formattedms}</p>
                     </li>`;
