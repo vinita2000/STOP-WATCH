@@ -41,6 +41,7 @@ function addToSessionStorage(){
 function initializeHistArr(){
     const st = '00 : 00 : 00 : 00';
     historyArr = [st, st, st, st, st, st, st, st, st, st];
+    localStorage.setItem('historyArr', JSON.stringify(historyArr));
 }
 
 //update session storage
