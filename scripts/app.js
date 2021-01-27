@@ -26,12 +26,11 @@ let totalLapsArr = [];
 let formattedms, formattedmin, formattedsec, formattedhr;
 
 //store to session storage handler
-function addToSessionStorage(){
-    if(sessionStorage.length === 0){
-        sessionStorage.setItem('ms', 0);
-        sessionStorage.setItem('sec', 0);
-        sessionStorage.setItem('min', 0);
-        sessionStorage.setItem('hr', 0);
+function addTimeToLocalStorage(){
+    let localItem = localStorage.getItem('timeArr');
+    if(localItem === null){
+        let temp = [0,0,0,0];
+        localStorage.setItem('timeArr', JSON.stringify(temp));
         ms=0;
         sec=0;
         min=0;
@@ -47,11 +46,9 @@ function initializeHistArr(){
 }
 
 //update session storage
-function updateSessionStorage(){
-    sessionStorage.setItem('ms', ms);
-    sessionStorage.setItem('sec', sec);
-    sessionStorage.setItem('min', min);
-    sessionStorage.setItem('hr', hr);
+function updateTimeInLocalStorage(){
+    let temp = [hr, min, sec, ms];
+    localStorage.setItem('timeArr', JSON.stringify(temp));
 }
 
 //format timer
@@ -96,7 +93,7 @@ function timer(){
     }
     //output time & formatting handler
     renderTimer();
-    updateSessionStorage();
+    updateTimeInLocalStorage();
 }
 
 //start timer handler function
@@ -108,14 +105,9 @@ function startTimerHandler(){
         throw new Error('Timer is already running :|');
     }
     isRunning = true;
-    let temp1 = sessionStorage.getItem('ms');
-    let temp2 = sessionStorage.getItem('sec');
-    let temp3 = sessionStorage.getItem('min');
-    let temp4 = sessionStorage.getItem('hr');
-    hr = parseInt(temp4);
-    min = parseInt(temp3);
-    sec = parseInt(temp2);
-    ms = parseInt(temp1);
+    let timeArrtemp = localStorage.getItem('timeArr');
+    timeArr = JSON.parse(timeArrtemp);
+    [hr, min, sec, ms] = timeArr; 
     time = setInterval(timer, 10);
 }
 
@@ -173,7 +165,7 @@ function resetTimerHandler(){
     //clear the interval
     clearInterval(time);
     renderTimer();
-    updateSessionStorage();
+    updateTimeInLocalStorage();
     //clear the laps as well
     lapList.innerHTML = '';
 }
@@ -213,7 +205,7 @@ function lapsHandler(){
 }
 
 //set values to session initially
-addToSessionStorage();
+addTimeToLocalStorage();
 //initialize history array in local storage
 initializeHistArr();
 addToHistory();
