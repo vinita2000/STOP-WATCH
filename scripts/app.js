@@ -189,7 +189,7 @@ function calculateTotalLapTime(){
     fm = m<10?`0`+m : s;
     fh = h<10?`0`+h : h;
     //render sum on the page
-    totalLaps.innerHTML = `TOTAL : ${fh} Hrs : ${fm} Min: ${fs} Sec`;
+    totalLaps.innerHTML = `TOTAL : ${fh} Hrs ${fm} Min ${fs} Sec`;
 }
 
 //adds current lap time to lapsArr
