@@ -9,6 +9,8 @@ const milliseconds = document.getElementById('milliseconds');
 const lapList = document.getElementById('lapList');
 const historyList = document.getElementById('historyList');
 const totalLaps = document.getElementById('totalLaps');
+//disable laps at the start
+document.getElementById("laps").disabled = true;
 
 //global variables 
 let ms;
@@ -99,6 +101,8 @@ function timer(){
 
 //start timer handler function
 function startTimerHandler(){
+    //enable laps button
+    document.getElementById("laps").disabled = false;
     //set a interval for the timer
     if(isRunning){
         throw new Error('Timer is already running :|');
