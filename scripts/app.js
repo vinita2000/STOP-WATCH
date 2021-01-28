@@ -1,3 +1,4 @@
+
 const startTimer = document.getElementById('play');
 const stopTimer = document.getElementById('stop');
 const resetTimer = document.getElementById('reset');
@@ -21,6 +22,7 @@ let time;
 let isRunning = false;
 let historyArr;
 let totalLapsArr = [];
+let timeDiff = [0, 0, 0];
 
 //formatting variables
 let formattedms, formattedmin, formattedsec, formattedhr;
@@ -83,11 +85,11 @@ function timer(){
         ms = 0;
         sec ++;
     }
-    if(sec/60 === 1){
+    if(sec/60 >= 1){
         sec = 0;
         min ++;
     }
-    if(min/60 === 1){
+    if(min/60 >= 1){
         min = 0;
         hr ++;
     }
@@ -115,6 +117,11 @@ function startTimerHandler(){
     let timeArrtemp = localStorage.getItem('timeArr');
     timeArr = JSON.parse(timeArrtemp);
     [hr, min, sec, ms] = timeArr; 
+    getBeforeAfterTime();
+    //add time to hr, min, sec
+    hr += timeDiff[0];
+    min += timeDiff[1];
+    sec += timeDiff[2];
     time = setInterval(timer, 10);
 }
 
@@ -176,15 +183,22 @@ function resetTimerHandler(){
     //clear the laps as well
     lapList.innerHTML = '';
 }
+//converts seconds to min hr and seconds
+function convertToHrMinSec(time){
+    let arr = [0, 0, 0];
+    arr[0] = Math.floor(time / 3600);
+    arr[1]= Math.floor(time % 3600 / 60);
+    arr[2] = Math.floor(time % 3600 % 60);
+    return arr;
+}
 
 //calculates the total lap time in seconds
 function calculateTotalLapTime(){
     let sum = totalLapsArr.reduce(function(a, b){
         return a + b;
     }, 0);
-    let h = Math.floor(sum / 3600);
-    let m = Math.floor(sum % 3600 / 60);
-    let s = Math.floor(sum % 3600 % 60);
+    let time = convertToHrMinSec(sum);
+    [h, m, s] = time;
     fs = s<10?`0`+s : s;
     fm = m<10?`0`+m : s;
     fh = h<10?`0`+h : h;
@@ -211,6 +225,28 @@ function lapsHandler(){
     lapList.innerHTML += currentLap;
 }
 
+//find time difference before and after load
+function calculateTimeDiff(beforeTime, afterTime){
+    for(let i=0; i<beforeTime.length; i++){
+        timeDiff[i] = Math.abs(afterTime[i] - beforeTime[i]);
+    }
+    console.log(timeDiff);
+}
+
+//get before and after time from local
+function getBeforeAfterTime(){
+    let x = localStorage.getItem('beforeTimeArr');
+    let y = localStorage.getItem('afterTimeArr');
+    if(x === null || x === undefined || y === null || y === undefined){
+        console.log('It is your first time here');
+    }
+    else{
+        let beforeTime = JSON.parse(x);
+        let afterTime = JSON.parse(y);
+        calculateTimeDiff(beforeTime, afterTime);
+    }
+}
+
 //set values to session initially
 addTimeToLocalStorage();
 //initialize history array in local storage
@@ -222,3 +258,23 @@ startTimer.addEventListener('click', startTimerHandler);//also change the button
 stopTimer.addEventListener('click', stopTimerHandler);
 resetTimer.addEventListener('click', resetTimerHandler);
 laps.addEventListener('click', lapsHandler);
+
+//save time to local on refresh
+window.addEventListener('beforeunload', (e)=>{
+    e.preventDefault();
+    let d = new Date();
+    let time = d.getSeconds();
+    let beforeTimeArr = convertToHrMinSec(time);
+    //store time to local storage
+    localStorage.setItem('beforeTimeArr', JSON.stringify(beforeTimeArr));
+});
+
+//save onload time 
+window.addEventListener('load', (e)=>{
+    e.preventDefault();
+    let d = new Date();
+    let time = d.getSeconds();
+    let afterTimeArr = convertToHrMinSec(time);
+    //store time to local storage
+    localStorage.setItem('afterTimeArr', JSON.stringify(afterTimeArr));
+});
