@@ -187,8 +187,8 @@ function resetTimerHandler(){
 function convertToHrMinSec(time){
     let arr = [0, 0, 0];
     arr[0] = Math.floor(time / 3600);
-    arr[1]= Math.floor(time % 3600 / 60);
-    arr[2] = Math.floor(time % 3600 % 60);
+    arr[1]= Math.floor((time % 3600) / 60);
+    arr[2] = Math.ceil(time % 3600 % 60);
     return arr;
 }
 
