@@ -12,6 +12,7 @@ const historyList = document.getElementById('historyList');
 const totalLaps = document.getElementById('totalLaps');
 //disable laps at the start
 document.getElementById("laps").disabled = true;
+document.getElementById('reset').disabled = true;
 
 //global variables 
 let ms;
@@ -60,6 +61,13 @@ function updateTimeInLocalStorage(){
     localStorage.setItem('timeArr', JSON.stringify(temp));
 }
 
+//get time from local storage
+function getTimeFromLocal(){
+    let timeArrtemp = localStorage.getItem('timeArr');
+    timeArr = JSON.parse(timeArrtemp);
+    [hr, min, sec, ms] = timeArr; 
+}
+
 //format timer
 function formatTimer(){
     formattedms = ms<10?`0`+ms : ms;
@@ -105,18 +113,20 @@ function timer(){
     updateTimeInLocalStorage();
 }
 
+//enable reset and laps
+function enableButtons(){
+     //enable laps button
+     document.getElementById("laps").disabled = false;
+     document.getElementById('reset').disabled = false;
+}
+
 //start timer handler function
 function startTimerHandler(){
-    //enable laps button
-    document.getElementById("laps").disabled = false;
-    //set a interval for the timer
-    if(isRunning){
-        throw new Error('Timer is already running :|');
-    }
+    enableButtons();
     isRunning = true;
-    let timeArrtemp = localStorage.getItem('timeArr');
-    timeArr = JSON.parse(timeArrtemp);
-    [hr, min, sec, ms] = timeArr; 
+    document.getElementById('play').disabled = true;
+    document.getElementById('stop').disabled = false;
+    getTimeFromLocal();
     getBeforeAfterTime();
     //add time to hr, min, sec
     hr += timeDiff[0];
@@ -128,10 +138,9 @@ function startTimerHandler(){
 //stop the watch handler
 function stopTimerHandler(){
     //clear the interval to freeze the time
-    if(!isRunning){
-        throw new Error('Timer has already stopped :|');
-    }
     isRunning = false;
+    document.getElementById('play').disabled = false;
+    document.getElementById('stop').disabled = true;
     clearInterval(time);
 }
 
@@ -230,7 +239,6 @@ function calculateTimeDiff(beforeTime, afterTime){
     for(let i=0; i<beforeTime.length; i++){
         timeDiff[i] = Math.abs(afterTime[i] - beforeTime[i]);
     }
-    console.log(timeDiff);
 }
 
 //get before and after time from local
@@ -247,12 +255,68 @@ function getBeforeAfterTime(){
     }
 }
 
+//sets current watch state in local
+function setWatchStateInLocal(){
+    let temp = localStorage.getItem('isRunning');
+    if(temp === undefined || temp === null){
+        localStorage.setItem('isRunning', 'false');
+    }
+    else{
+        localStorage.setItem('isRunning', isRunning);
+    }
+} 
+//gets last stored watch state
+function getWatchStateInLocal(){
+    let temp = localStorage.getItem('isRunning');
+    if(temp != undefined || temp != null){
+        isRunning = JSON.parse(temp);
+    }
+    else{
+        isRunning = false;
+    }
+}
+
+//before unload handler
+function beforeunloadHandler(){
+    setWatchStateInLocal();
+    let beforeTimeArr;
+    if(isRunning){
+        let d = new Date();
+        let time = d.getSeconds();
+        beforeTimeArr = convertToHrMinSec(time);
+    }
+    else{
+        beforeTimeArr = [0, 0, 0];
+    }
+    //store time to local storage
+    localStorage.setItem('beforeTimeArr', JSON.stringify(beforeTimeArr));
+}
+
+//onload handler
+function onloadHandler(){
+    getWatchStateInLocal();
+    let afterTimeArr;
+    if(isRunning){
+        let d = new Date();
+        let time = d.getSeconds();
+        afterTimeArr = convertToHrMinSec(time);
+        startTimerHandler();
+    }
+    else{
+        afterTimeArr = [0, 0, 0];
+        getTimeFromLocal();
+        renderTimer();
+    }
+    //store time to local storage
+    localStorage.setItem('afterTimeArr', JSON.stringify(afterTimeArr));
+}
+
 //set values to session initially
 addTimeToLocalStorage();
 //initialize history array in local storage
 initializeHistArr();
 addToHistory();
-startTimerHandler();
+
 //adding event listeners
 startTimer.addEventListener('click', startTimerHandler);//also change the button icon to pause
 stopTimer.addEventListener('click', stopTimerHandler);
@@ -262,19 +326,11 @@ laps.addEventListener('click', lapsHandler);
 //save time to local on refresh
 window.addEventListener('beforeunload', (e)=>{
     e.preventDefault();
-    let d = new Date();
-    let time = d.getSeconds();
-    let beforeTimeArr = convertToHrMinSec(time);
-    //store time to local storage
-    localStorage.setItem('beforeTimeArr', JSON.stringify(beforeTimeArr));
+    beforeunloadHandler();
 });
 
 //save onload time 
 window.addEventListener('load', (e)=>{
     e.preventDefault();
-    let d = new Date();
-    let time = d.getSeconds();
-    let afterTimeArr = convertToHrMinSec(time);
-    //store time to local storage
-    localStorage.setItem('afterTimeArr', JSON.stringify(afterTimeArr));
+    onloadHandler();
 });
