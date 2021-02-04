@@ -22,7 +22,8 @@ let time;
 let isRunning = false;
 let historyArr;
 let totalLapsArr = [];
-let timeDiff = [0, 0, 0];
+let timeDiffArr = [0, 0, 0];
+let timeDiff;
 let currLapsArr = [];
 
 // formatting variables
@@ -164,9 +165,9 @@ function startTimerHandler() {
     getTimeFromLocal();
     getBeforeAfterTime();
     // add time to hr, min, sec
-    hr += timeDiff[0];
-    min += timeDiff[1];
-    sec += timeDiff[2];
+    hr += timeDiffArr[0];
+    min += timeDiffArr[1];
+    sec += timeDiffArr[2];
     time = setInterval(timer, 10);
 }
 
@@ -228,12 +229,13 @@ function resetTimerHandler() {
     // clear the laps as well
     lapList.innerHTML = '';
 }
+
 // converts seconds to min hr and seconds
-function convertToHrMinSec(time) {
+function convertToHrMinSec(timestamp) {
     let arr = [0, 0, 0];
-    arr[0] = Math.floor(time / 3600);
-    arr[1] = Math.floor((time % 3600) / 60);
-    arr[2] = Math.ceil(time % 3600 % 60);
+    arr[0] = Math.floor(timestamp / 60 / 60); // hrs
+    arr[1] = Math.floor(timestamp / 60) - (arr[0] * 60); // min
+    arr[2] = timestamp % 60; // sec
     return arr;
 }
 
@@ -277,7 +279,7 @@ function renderPreviousLapsInDom(curr) {
     let tempMin = curr[1] < 10 ? `0` + curr[1] : curr[1];
     let tempSec = curr[2] < 10 ? `0` + curr[2] : curr[2];
     renderLapsInDom(tempHr, tempMin, tempSec, 0);
-    //addPreviousLapsToTotalArr();
+    // addPreviousLapsToTotalArr();
     addCurrLaptoArr(curr[0], curr[1], curr[2]);
 }
 
@@ -292,9 +294,11 @@ function lapsHandler() {
 
 // find time difference before and after load
 function calculateTimeDiff(beforeTime, afterTime) {
-    for (let i = 0; i < beforeTime.length; i++) {
-        timeDiff[i] = Math.abs(afterTime[i] - beforeTime[i]);
+    let arr = [0, 0, 0]
+    for (let i = 0; i < 3; i++) {
+        arr[i] = Math.abs(afterTime[i] - beforeTime[i]);
     }
+    return arr;
 }
 
 // renders previously stored laps from local storage
@@ -306,16 +310,26 @@ function renderPreviousLaps() {
     }
 }
 
+
 // get before and after time from local
 function getBeforeAfterTime() {
     let x = localStorage.getItem('beforeTimeArr');
     let y = localStorage.getItem('afterTimeArr');
     if (x === null || x === undefined || y === null || y === undefined) {
         console.log('It is your first time here');
+        // timeDiffArr = [0, 0, 0];
     } else {
         let beforeTime = JSON.parse(x);
         let afterTime = JSON.parse(y);
-        calculateTimeDiff(beforeTime, afterTime);
+        // if one array is all zeros then do not substract
+        let temp1 = beforeTime.reduce((a, b) => a + b, 0);
+        let temp2 = afterTime.reduce((a, b) => a + b, 0);
+        if (temp1 === 0 || temp2 === 0) {
+            timeDiffArr = [0, 0, 0]
+        } else {
+            timeDiffArr = calculateTimeDiff(beforeTime, afterTime);
+        }
+        console.log('Time Difference: ', timeDiffArr);
     }
 }
 
@@ -345,8 +359,7 @@ function beforeunloadHandler() {
     let beforeTimeArr;
     if (isRunning) {
         let d = new Date();
-        let time = d.getSeconds();
-        beforeTimeArr = convertToHrMinSec(time);
+        beforeTimeArr = [d.getHours(), d.getMinutes(), d.getSeconds()];
     } else {
         beforeTimeArr = [0, 0, 0];
     }
@@ -362,8 +375,7 @@ function onloadHandler() {
     let afterTimeArr;
     if (isRunning) {
         let d = new Date();
-        let time = d.getSeconds();
-        afterTimeArr = convertToHrMinSec(time);
+        afterTimeArr = [d.getHours(), d.getMinutes(), d.getSeconds()];
         startTimerHandler();
     } else {
         afterTimeArr = [0, 0, 0];
